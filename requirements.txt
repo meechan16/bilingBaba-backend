@@ -1,5 +1,4 @@
 reportlab
-io
 firebase_admin
 flask
 flask_cors

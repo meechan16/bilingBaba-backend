@@ -62,14 +62,14 @@ def check_user_exists(uid):
             return False
 
 
-def write_to_firestore(custom_id, data, collection="items"):
+def write_to_firestore(custom_id, data, collection="user_data"):
     # Add a document with a custom ID to the "items" collection
     doc_ref = db.collection(collection).document(custom_id)
     doc_ref.set(data)
     print("Document '{}' written to Firestore.".format(custom_id))
 
 
-def read_from_firestore(custom_id, collection="items"):
+def read_from_firestore(custom_id, collection="user_data"):
     # Retrieve a document from the "items" collection
     doc_ref = db.collection(collection).document(custom_id)
     doc = doc_ref.get()
@@ -81,14 +81,59 @@ def read_from_firestore(custom_id, collection="items"):
 
 
 def add_Sale(uid, data):
-    prev_data = read_from_firestore(uid, "sales")
+    prev_data = read_from_firestore(uid)
     # prev_data = sample_data
 
-    prev_data["sales"].append(data)
-    print(data)
-    prev_data["total_sales"] += int(data['total'])
+    if prev_data["sales"]:
+        prev_data["sales"].append(data)
+        print(data)
+    else:
+        prev_data["sales"] = [data,]
+    if prev_data['total_sales']:
+        prev_data["total_sales"] += int(data['total'])
+    else:
+        prev_data["total_sales"] = int(data['total'])
 
-    write_to_firestore(uid, prev_data, "sales")
+    write_to_firestore(uid, prev_data)
+
+
+def add_pruchase(uid, data):
+    prev_data = read_from_firestore(uid)
+    # prev_data = sample_data
+    if prev_data["purchase"]:
+        prev_data["purchase"].append(data)
+        print(data)
+    else:
+        prev_data["purchase"] = [data,]
+    if prev_data['total_purchase']:
+        prev_data["total_purchase"] += int(data['total'])
+    else:
+        prev_data["total_purchase"] = int(data['total'])
+
+    write_to_firestore(uid, prev_data)
+
+
+def add_Item(uid, data):
+    prev_data = read_from_firestore(uid)
+    # prev_data = sample_data
+    if prev_data["items"]:
+        prev_data["items"].append(data)
+        print(data)
+    else:
+        prev_data["items"] = [data,]
+
+    write_to_firestore(uid, prev_data)
+
+
+def add_parties(uid, data):
+    prev_data = read_from_firestore(uid)
+    # prev_data = sample_data
+    if prev_data["parties"]:
+        prev_data["parties"].append(data)
+        print(data)
+    else:
+        prev_data["parties"] = [data,]
+    write_to_firestore(uid, prev_data)
 
 
 # ROOT URLS
@@ -118,7 +163,7 @@ def todo():
     #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
     reqdata = request.get_json()
     print(reqdata)
-    write_to_firestore(auth_header, reqdata, "sales")
+    write_to_firestore(auth_header, reqdata)
     return jsonify({"status": "success"}), 200
 
 
@@ -132,7 +177,7 @@ def add_items_and_get_pdf():
     data = request.get_json()
     print(data)
     write_to_firestore(
-        data=data, custom_id=auth_header, collection="items")
+        data=data, custom_id=auth_header)
 
     from bill_pdf_maker import create_tax_invoice_pdf
     buffer = create_tax_invoice_pdf(data)
@@ -146,7 +191,7 @@ def get_items():
     # if not check_user_exists(auth_header):
     #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
 
-    res = read_from_firestore(custom_id=auth_header, collection="sales")
+    res = read_from_firestore(custom_id=auth_header)
     return jsonify({"status": "success", "data": res}), 200
 
 

@@ -2,4 +2,6 @@ reportlab
 firebase_admin
 flask
 flask_cors
+python-dotenv
 flask_mail
+gunicorn

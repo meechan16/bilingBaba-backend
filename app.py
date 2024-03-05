@@ -81,8 +81,8 @@ def read_from_firestore(custom_id, collection="user_data"):
 
 
 def add_Sale(uid, data):
-    prev_data = read_from_firestore(uid)
-    # prev_data = sample_data
+    # prev_data = read_from_firestore(uid)
+    prev_data = sample_data
 
     if prev_data["sales"]:
         prev_data["sales"].append(data)

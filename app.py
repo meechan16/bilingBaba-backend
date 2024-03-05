@@ -36,6 +36,8 @@ sample_data = {
         "task 5": "done",
     },
     "sales": [],
+    "parties": [],
+    "items": [],
     "total_sales": 0,
     "total_purchase": 0,
     "total_profit": 0,
@@ -81,45 +83,52 @@ def read_from_firestore(custom_id, collection="user_data"):
 
 
 def add_Sale(uid, data):
-    # prev_data = read_from_firestore(uid)
-    prev_data = sample_data
+    prev_data = read_from_firestore(uid)
+    # print("before", prev_data, "/n")
+    # prev_data = sample_data
 
-    if prev_data["sales"]:
+    try:
         prev_data["sales"].append(data)
-        print(data)
-    else:
+        # print(data)
+    except Exception as e:
+        print(e)
         prev_data["sales"] = [data,]
-    if prev_data['total_sales']:
+    try:
         prev_data["total_sales"] += int(data['total'])
-    else:
+    except Exception as e:
+        print(e)
         prev_data["total_sales"] = int(data['total'])
 
+    # print("after", prev_data, "/n")
     write_to_firestore(uid, prev_data)
 
 
 def add_pruchase(uid, data):
     prev_data = read_from_firestore(uid)
     # prev_data = sample_data
-    if prev_data["purchase"]:
+    try:
         prev_data["purchase"].append(data)
         print(data)
-    else:
+    except Exception as e:
+        print(e)
         prev_data["purchase"] = [data,]
-    if prev_data['total_purchase']:
+    try:
         prev_data["total_purchase"] += int(data['total'])
-    else:
+    except Exception as e:
+        print(e)
         prev_data["total_purchase"] = int(data['total'])
 
     write_to_firestore(uid, prev_data)
 
 
-def add_Item(uid, data):
+def add_items(uid, data):
     prev_data = read_from_firestore(uid)
     # prev_data = sample_data
-    if prev_data["items"]:
+    try:
         prev_data["items"].append(data)
         print(data)
-    else:
+    except Exception as e:
+        print(e)
         prev_data["items"] = [data,]
 
     write_to_firestore(uid, prev_data)
@@ -128,10 +137,11 @@ def add_Item(uid, data):
 def add_parties(uid, data):
     prev_data = read_from_firestore(uid)
     # prev_data = sample_data
-    if prev_data["parties"]:
+    try:
         prev_data["parties"].append(data)
-        print(data)
-    else:
+        # print(data)
+    except Exception as e:
+        print(e)
         prev_data["parties"] = [data,]
     write_to_firestore(uid, prev_data)
 
@@ -142,23 +152,73 @@ def index():
     return jsonify({"status": "200 - working", "descripttion": "welcome to coachpointai API"})
 
 
-@app.route('/addsales', methods=['POST'])
-def add_items():
+@app.route('/reset_acc', methods=['GET'])
+def reset_Acc():
     auth_header = request.headers.get('Authorization')
-    print("Authorization Header:", auth_header)
+    print("reset requested by: ", auth_header)
+    # if not check_user_exists(auth_header):
+    #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
+
+    write_to_firestore(auth_header, sample_data)
+    return jsonify({"status": "success"}), 200
+
+
+@app.route('/addsales', methods=['POST'])
+def add_sales():
+    auth_header = request.headers.get('Authorization')
+    # print("Authorization Header:", auth_header)
+    # if not check_user_exists(auth_header):
+    #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
+
+    file_path = request.get_json()
+    # print(file_path)
+    add_Sale(auth_header, file_path)
+    return jsonify({"status": "success"}), 200
+
+
+@app.route('/addpurchase', methods=['POST'])
+def add_purchase():
+    auth_header = request.headers.get('Authorization')
+    # print("Authorization Header:", auth_header)
     # if not check_user_exists(auth_header):
     #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
 
     file_path = request.get_json()
     print(file_path)
-    add_Sale(auth_header, file_path)
+    add_pruchase(auth_header, file_path)
+    return jsonify({"status": "success"}), 200
+
+
+@app.route('/additems', methods=['POST'])
+def add_it():
+    auth_header = request.headers.get('Authorization')
+    # print("Authorization Header:", auth_header)
+    # if not check_user_exists(auth_header):
+    #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
+
+    file_path = request.get_json()
+    # print(file_path)
+    add_items(auth_header, file_path)
+    return jsonify({"status": "success"}), 200
+
+
+@app.route('/addparties', methods=['POST'])
+def add_pa():
+    auth_header = request.headers.get('Authorization')
+    # print("Authorization Header:", auth_header)
+    # if not check_user_exists(auth_header):
+    #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
+
+    file_path = request.get_json()
+    # print(file_path)
+    add_parties(auth_header, file_path)
     return jsonify({"status": "success"}), 200
 
 
 @app.route('/update_todo', methods=['POST'])
 def todo():
     auth_header = request.headers.get('Authorization')
-    print("Authorization Header:", auth_header)
+    # print("Authorization Header:", auth_header)
     # if not check_user_exists(auth_header):
     #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
     reqdata = request.get_json()
@@ -168,7 +228,7 @@ def todo():
 
 
 @app.route('/addsalesAndGetPdf', methods=['POST'])
-def add_items_and_get_pdf():
+def save_sales_nd_pdf():
     auth_header = request.headers.get('Authorization')
     print("Authorization Header:", auth_header)
     # if not check_user_exists(auth_header):
@@ -194,62 +254,6 @@ def get_items():
     res = read_from_firestore(custom_id=auth_header)
     return jsonify({"status": "success", "data": res}), 200
 
-
-# app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-# app.config['MAIL_PORT'] = 587
-# app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME")
-# app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")
-# app.config['MAIL_USE_TLS'] = True   # Set it to False if you're using SSL
-# app.config['MAIL_DEFAULT_SENDER'] = os.getenv("MAIL_USERNAME")
-
-# mail = Mail(app)
-
-# from app.routes.user_routes import USER_BLUEPRINT
-# from app.routes.data_routes import DATA_BP
-
-# app.register_blueprint(USER_BLUEPRINT)
-# app.register_blueprint(DATA_BP)
-
-
-# @app.route('/contact_us', methods=['POST'])
-# def Support_mail():
-#     data = request.get_json()
-
-#     subject = str(data.get('email'))
-#     body = data.get('body')
-#     email = 'karan@coachpoints.ai'
-
-#     from app.utils.Others import send_email
-#     # user_mail_body = "Thank you for reaching out to us. \nWe genuinely appreciate your inquiry, and our dedicated team is committed to providing you with the best possible assistance. \nYour query is important to us, and we will respond as soon as possible.\n In the meantime, if you have any further questions or require immediate assistance,\n please don't hesitate to get in touch. \nWe look forward to helping you with your needs.\n\nCoachpoints.ai"
-#     user_mail_body = '''
-# Thank you for reaching out to us.
-# We appreciate your inquiry, and our dedicated team will get back to you asap.
-
-# In the meantime, if you have any further questions or require immediate assistance, please reply to this email with your email id and query.
-
-# Thanks,
-# Team CoachPoints AI
-#     '''
-#     User_email = send_email(email=subject, subject="Querry Submission - Team Coachpoint",body= user_mail_body)
-#     system_email = send_email(email, "Querry from "+subject, body)
-#     if User_email and system_email:
-#         return jsonify({"message": "Email sent successfully!"}), 200
-#     else:
-#         return jsonify({"error": "Failed to send email."}), 500
-
-
-# from app.utils.mongoDb import ADMIN
-# @app.route('/admin', methods=['GET'])
-# def admin():
-#     Id = request.args.get('id')
-#     if Id == "cheesecake":
-#         data = ADMIN.get_data()
-#         print(type(data))
-#         if '_id' in data:
-#             del data['_id']
-#         return format_dictionary({"Status":True,"data":data}), 200
-#     else:
-#         return jsonify({"status":"False","Desc":"prohabbited"}),200
 
 if __name__ == '__main__':
     app.run(port=9000, debug=True)

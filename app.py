@@ -69,6 +69,7 @@ def write_to_firestore(custom_id, data, collection="user_data"):
     doc_ref = db.collection(collection).document(custom_id)
     doc_ref.set(data)
     print("Document '{}' written to Firestore.".format(custom_id))
+    return True
 
 
 def read_from_firestore(custom_id, collection="user_data"):
@@ -99,8 +100,13 @@ def add_Sale(uid, data):
         print(e)
         prev_data["total_sales"] = int(data['total'])
 
+    try:
+        print(prev_data["name"])
+    except:
+        print("data got reset")
+        return False
     # print("after", prev_data, "/n")
-    write_to_firestore(uid, prev_data)
+    return write_to_firestore(uid, prev_data)
 
 
 def add_pruchase(uid, data):
@@ -118,7 +124,13 @@ def add_pruchase(uid, data):
         print(e)
         prev_data["total_purchase"] = int(data['total'])
 
-    write_to_firestore(uid, prev_data)
+    try:
+        print(prev_data["name"])
+    except:
+        print("data got reset")
+        return False
+    # print("after", prev_data, "/n")
+    return write_to_firestore(uid, prev_data)
 
 
 def add_items(uid, data):
@@ -131,7 +143,13 @@ def add_items(uid, data):
         print(e)
         prev_data["items"] = [data,]
 
-    write_to_firestore(uid, prev_data)
+    try:
+        print(prev_data["name"])
+    except:
+        print("data got reset")
+        return False
+    # print("after", prev_data, "/n")
+    return write_to_firestore(uid, prev_data)
 
 
 def add_parties(uid, data):
@@ -143,10 +161,17 @@ def add_parties(uid, data):
     except Exception as e:
         print(e)
         prev_data["parties"] = [data,]
-    write_to_firestore(uid, prev_data)
-
+    try:
+        print(prev_data["name"])
+    except:
+        print("data got reset")
+        return False
+    # print("after", prev_data, "/n")
+    return write_to_firestore(uid, prev_data)
 
 # ROOT URLS
+
+
 @app.route("/", methods=['GET'])
 def index():
     return jsonify({"status": "200 - working", "descripttion": "welcome to coachpointai API"})
@@ -172,8 +197,11 @@ def add_sales():
 
     file_path = request.get_json()
     # print(file_path)
-    add_Sale(auth_header, file_path)
-    return jsonify({"status": "success"}), 200
+    res = add_Sale(auth_header, file_path)
+    if res:
+        return jsonify({"status": res}), 200
+    else:
+        return jsonify({"status": res}), 501
 
 
 @app.route('/addpurchase', methods=['POST'])
@@ -185,8 +213,11 @@ def add_purchase():
 
     file_path = request.get_json()
     print(file_path)
-    add_pruchase(auth_header, file_path)
-    return jsonify({"status": "success"}), 200
+    res = add_pruchase(auth_header, file_path)
+    if res:
+        return jsonify({"status": res}), 200
+    else:
+        return jsonify({"status": res}), 501
 
 
 @app.route('/additems', methods=['POST'])
@@ -198,8 +229,11 @@ def add_it():
 
     file_path = request.get_json()
     # print(file_path)
-    add_items(auth_header, file_path)
-    return jsonify({"status": "success"}), 200
+    res = add_items(auth_header, file_path)
+    if res:
+        return jsonify({"status": res}), 200
+    else:
+        return jsonify({"status": res}), 501
 
 
 @app.route('/addparties', methods=['POST'])
@@ -211,8 +245,11 @@ def add_pa():
 
     file_path = request.get_json()
     # print(file_path)
-    add_parties(auth_header, file_path)
-    return jsonify({"status": "success"}), 200
+    res = add_parties(auth_header, file_path)
+    if res:
+        return jsonify({"status": res}), 200
+    else:
+        return jsonify({"status": res}), 501
 
 
 @app.route('/update_todo', methods=['POST'])
@@ -223,8 +260,11 @@ def todo():
     #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
     reqdata = request.get_json()
     print(reqdata)
-    write_to_firestore(auth_header, reqdata)
-    return jsonify({"status": "success"}), 200
+    res = write_to_firestore(auth_header, reqdata)
+    if res:
+        return jsonify({"status": res}), 200
+    else:
+        return jsonify({"status": res}), 501
 
 
 @app.route('/addsalesAndGetPdf', methods=['POST'])

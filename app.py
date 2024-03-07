@@ -152,6 +152,44 @@ def add_items(uid, data):
     return write_to_firestore(uid, prev_data)
 
 
+def add_units(uid, data):
+    prev_data = read_from_firestore(uid)
+    # prev_data = sample_data
+    try:
+        prev_data["units"].append(data)
+        print(data)
+    except Exception as e:
+        print(e)
+        prev_data["units"] = [data,]
+
+    try:
+        print(prev_data["name"])
+    except:
+        print("data got reset")
+        return False
+    # print("after", prev_data, "/n")
+    return write_to_firestore(uid, prev_data)
+
+
+def add_category(uid, data):
+    prev_data = read_from_firestore(uid)
+    # prev_data = sample_data
+    try:
+        prev_data["category"].append({"name": data["Category"]})
+        # print(data)
+    except Exception as e:
+        print(e)
+        prev_data["category"] = list({"name": data["Category"]})
+
+    try:
+        print(prev_data["name"])
+    except:
+        print("data got reset")
+        return False
+    # print("after", prev_data, "/n")
+    return write_to_firestore(uid, prev_data)
+
+
 def add_parties(uid, data):
     prev_data = read_from_firestore(uid)
     # prev_data = sample_data
@@ -230,6 +268,38 @@ def add_it():
     file_path = request.get_json()
     # print(file_path)
     res = add_items(auth_header, file_path)
+    if res:
+        return jsonify({"status": res}), 200
+    else:
+        return jsonify({"status": res}), 501
+
+
+@app.route('/addCategory', methods=['POST'])
+def add_cat():
+    auth_header = request.headers.get('Authorization')
+    # print("Authorization Header:", auth_header)
+    # if not check_user_exists(auth_header):
+    #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
+
+    file_path = request.get_json()
+    # print(file_path)
+    res = add_category(auth_header, file_path)
+    if res:
+        return jsonify({"status": res}), 200
+    else:
+        return jsonify({"status": res}), 501
+
+
+@app.route('/addUnits', methods=['POST'])
+def add_un():
+    auth_header = request.headers.get('Authorization')
+    # print("Authorization Header:", auth_header)
+    # if not check_user_exists(auth_header):
+    #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
+
+    file_path = request.get_json()
+    # print(file_path)
+    res = add_units(auth_header, file_path)
     if res:
         return jsonify({"status": res}), 200
     else:

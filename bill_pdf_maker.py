@@ -114,7 +114,7 @@ def create_tax_invoice_pdf(data):
 
     # Values on the right side in table format
     data = [
-        ("Sub Total", "₹ "+str(data['total'] - data['total_tax'])),
+        ("Sub Total", "₹ "+str(int(data['total']) - int(data['total_tax']))),
         ("Tax (0%)", "₹ "+str(data['total_tax'])),
         ("Total", "₹ "+str(data['total'])),
         ("Paid", "₹ 0.00"),

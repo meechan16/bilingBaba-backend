@@ -4,14 +4,11 @@ from firebase_admin import credentials, auth, firestore
 from firebase_admin.exceptions import FirebaseError
 from flask_cors import CORS
 # from flask_mail import Mail
-from dotenv import load_dotenv, dotenv_values
 import os
+import uuid
 
 app = Flask(__name__)
 CORS(app)
-
-load_dotenv()
-
 
 try:
     cred = credentials.Certificate("auth_key.json")
@@ -41,10 +38,11 @@ sample_data = {
     "total_sales": 0,
     "total_purchase": 0,
     "total_profit": 0,
+    "total_expense": 0,
     "to_Collect": 0,
     "to_pay": 0,
-    "expense": 0,
-    "purchase": 0,
+    "expense": [],
+    "purchase": [],
     "cash_in_hand": 0
 }
 
@@ -76,36 +74,45 @@ def read_from_firestore(custom_id, collection="user_data"):
     # Retrieve a document from the "items" collection
     doc_ref = db.collection(collection).document(custom_id)
     doc = doc_ref.get()
-    if doc.exists:
-        print("Document data:", doc.to_dict())
-    else:
-        print("No such document!")
+    # if doc.exists:
+    #     print("Document data:", doc.to_dict())
+    # else:
+    #     print("No such document!")
     return doc.to_dict()
 
 
 def add_Sale(uid, data):
     prev_data = read_from_firestore(uid)
-    # print("before", prev_data, "/n")
-    # prev_data = sample_data
 
+    print("sales pre", prev_data)
     try:
         prev_data["sales"].append(data)
-        # print(data)
+    except Exception as e:
+        # print(e)
+        prev_data["sales"] = [data,]
+    try:
+        prev_data["sale_pending"] += int(data['pending'])
     except Exception as e:
         print(e)
-        prev_data["sales"] = [data,]
+        prev_data["sale_pending"] = int(data['pending'])
+    try:
+        prev_data["sale_paid"] += int(data['paid'])
+    except Exception as e:
+        print(e)
+        prev_data["sale_paid"] = int(data['paid'])
+
     try:
         prev_data["total_sales"] += int(data['total'])
     except Exception as e:
         print(e)
         prev_data["total_sales"] = int(data['total'])
 
+    print("sales", prev_data)
     try:
-        print(prev_data["name"])
+        print("data test", prev_data["name"])
     except:
         print("data got reset")
         return False
-    # print("after", prev_data, "/n")
     return write_to_firestore(uid, prev_data)
 
 
@@ -234,7 +241,7 @@ def add_sales():
     #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
 
     file_path = request.get_json()
-    # print(file_path)
+    print(file_path)
     res = add_Sale(auth_header, file_path)
     if res:
         return jsonify({"status": res}), 200
@@ -324,13 +331,29 @@ def add_pa():
 
 @app.route('/update_todo', methods=['POST'])
 def todo():
-    auth_header = request.headers.get('Authorization')
+    header = request.headers.get('Authorization')
     # print("Authorization Header:", auth_header)
     # if not check_user_exists(auth_header):
     #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
-    reqdata = request.get_json()
-    print(reqdata)
-    res = write_to_firestore(auth_header, reqdata)
+    data = request.get_json()
+
+    prev_data = read_from_firestore(header)
+    # prev_data = sample_data
+    print('reqdata = ', data)
+    try:
+        prev_data["todo_list"].append(data["todo_lists"])
+        # print(data)
+    except Exception as e:
+        print(e)
+        prev_data["todo_list"] = [data["todo_lists"],]
+    print('data = ', prev_data)
+    try:
+        print("data is fine", data["name"])
+    except:
+        print("data got reset")
+        return jsonify({"status": "failed due to insufficient data"}), 200
+
+    res = write_to_firestore(header, prev_data)
     if res:
         return jsonify({"status": res}), 200
     else:
@@ -346,8 +369,7 @@ def save_sales_nd_pdf():
 
     data = request.get_json()
     print(data)
-    write_to_firestore(
-        data=data, custom_id=auth_header)
+    add_Sale(data=data, uid=auth_header)
 
     from bill_pdf_maker import create_tax_invoice_pdf
     buffer = create_tax_invoice_pdf(data)
@@ -362,6 +384,7 @@ def get_items():
     #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
 
     res = read_from_firestore(custom_id=auth_header)
+    print(res)
     return jsonify({"status": "success", "data": res}), 200
 
 

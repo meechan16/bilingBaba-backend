@@ -197,6 +197,29 @@ def add_category(uid, data):
     return write_to_firestore(uid, prev_data)
 
 
+def add_info(uid, data):
+    prev_data = read_from_firestore(uid)
+    # prev_data = sample_data
+    try:
+        print(prev_data["name"])
+    except:
+        print("data got reset")
+        return False
+    try:
+        prev_data["uid"] = data['uid']
+        prev_data["name"] = data['Name']
+        prev_data["BusinessName"] = data['BusinessName']
+        prev_data["email"] = data['email']
+        prev_data["GSTIN"] = data['GSTIN']
+        prev_data["mobile"] = data['Mobile']
+        # print(data)
+    except Exception as e:
+        print(e)
+        return False
+    # print("after", prev_data, "/n")
+    return write_to_firestore(uid, prev_data)
+
+
 def add_parties(uid, data):
     prev_data = read_from_firestore(uid)
     # prev_data = sample_data
@@ -214,9 +237,8 @@ def add_parties(uid, data):
     # print("after", prev_data, "/n")
     return write_to_firestore(uid, prev_data)
 
+
 # ROOT URLS
-
-
 @app.route("/", methods=['GET'])
 def index():
     return jsonify({"status": "200 - working", "descripttion": "welcome to coachpointai API"})
@@ -307,6 +329,22 @@ def add_un():
     file_path = request.get_json()
     # print(file_path)
     res = add_units(auth_header, file_path)
+    if res:
+        return jsonify({"status": res}), 200
+    else:
+        return jsonify({"status": res}), 501
+
+
+@app.route('/addinfo', methods=['POST'])
+def add_inf():
+    auth_header = request.headers.get('Authorization')
+    # print("Authorization Header:", auth_header)
+    # if not check_user_exists(auth_header):
+    #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
+
+    file_path = request.get_json()
+    # print(file_path)
+    res = add_info(auth_header, file_path)
     if res:
         return jsonify({"status": res}), 200
     else:

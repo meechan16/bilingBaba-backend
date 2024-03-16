@@ -26,16 +26,15 @@ sample_data = {
     "name": None,
     "email": None,
     "todo_list": {
-        "task 1": "done",
-        "task 2": "pending",
-        "task 3": "pending",
-        "task 4": "done",
-        "task 5": "done",
+        "sample task 1": "done",
+        "sample task 2": "pending",
     },
     "sales": [],
+    "total_sales": 0,
+    "sale_pending": 0,
+    "sale_paid": 0,
     "parties": [],
     "items": [],
-    "total_sales": 0,
     "total_purchase": 0,
     "total_profit": 0,
     "total_expense": 0,
@@ -84,12 +83,27 @@ def read_from_firestore(custom_id, collection="user_data"):
 def add_Sale(uid, data):
     prev_data = read_from_firestore(uid)
 
-    print("sales pre", prev_data)
+    # print("sales pre", prev_data)
+    # count total length of previous array, add 1 and use it for index
+    try:
+        if len(prev_data["sales"] == 0):
+            sales_index = 0
+        else:
+            sales_index = prev_data["sales"]["index"] + 1
+    except:
+        sales_index = 0
+    # sales_index = len(prev_data['sales']) + 1
+    data['index'] = sales_index
+
+    print("index: ", sales_index)
+
+    # add sales list
     try:
         prev_data["sales"].append(data)
     except Exception as e:
-        # print(e)
         prev_data["sales"] = [data,]
+
+    # add pending paid
     try:
         prev_data["sale_pending"] += int(data['pending'])
     except Exception as e:
@@ -101,13 +115,19 @@ def add_Sale(uid, data):
         print(e)
         prev_data["sale_paid"] = int(data['paid'])
 
+    # add to collect
+    if data['paymentStatus'] == 'pending':
+        prev_data['to_collect'] += int(data['pending'])
+
+    # add total sales
     try:
         prev_data["total_sales"] += int(data['total'])
     except Exception as e:
         print(e)
         prev_data["total_sales"] = int(data['total'])
 
-    print("sales", prev_data)
+    # print("sales", prev_data)
+    # Test data
     try:
         print("data test", prev_data["name"])
     except:
@@ -198,7 +218,9 @@ def add_category(uid, data):
 
 
 def add_info(uid, data):
-    prev_data = read_from_firestore(uid)
+    # prev_data = read_from_firestore(uid)
+    prev_data = sample_data
+    # write_to_firestore(auth_header, sample_data)
     # prev_data = sample_data
     try:
         print(prev_data["name"])
@@ -251,7 +273,7 @@ def reset_Acc():
     # if not check_user_exists(auth_header):
     #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
 
-    write_to_firestore(auth_header, sample_data)
+    write_to_firestore(auth_header, {})
     return jsonify({"status": "success"}), 200
 
 
@@ -378,15 +400,16 @@ def todo():
     prev_data = read_from_firestore(header)
     # prev_data = sample_data
     print('reqdata = ', data)
-    try:
-        prev_data["todo_list"].append(data["todo_lists"])
-        # print(data)
-    except Exception as e:
-        print(e)
-        prev_data["todo_list"] = [data["todo_lists"],]
+    prev_data["todo_list"] = data["todo_lists"]
+    # try:
+
+    #     # print(data)
+    # except Exception as e:
+    #     print(e)
+    #     # prev_data["todo_list"] = [data["todo_lists"]
     print('data = ', prev_data)
     try:
-        print("data is fine", data["name"])
+        print("data is fine", prev_data["name"])
     except:
         print("data got reset")
         return jsonify({"status": "failed due to insufficient data"}), 200

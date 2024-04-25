@@ -40,7 +40,8 @@ sample_data = {
     "total_expense": 0,
     "to_Collect": 0,
     "to_pay": 0,
-    "expense": [],
+    "expenseItems": [],
+    "ExpenseCategory": [],
     "purchase": [],
     "cash_in_hand": 0
 }
@@ -160,61 +161,63 @@ def add_pruchase(uid, data):
     return write_to_firestore(uid, prev_data)
 
 
-def add_items(uid, data):
-    prev_data = read_from_firestore(uid)
-    # prev_data = sample_data
-    try:
-        prev_data["items"].append(data)
-        print(data)
-    except Exception as e:
-        print(e)
-        prev_data["items"] = [data,]
+# def add_items(uid, data):
+#     prev_data = read_from_firestore(uid)
+#     # prev_data = sample_data
+#     try:
+#         prev_data["items"].append(data)
+#         print(data)
+#     except Exception as e:
+#         print(e)
+#         prev_data["items"] = [data,]
 
-    try:
-        print(prev_data["name"])
-    except:
-        print("data got reset")
-        return False
-    # print("after", prev_data, "/n")
-    return write_to_firestore(uid, prev_data)
-
-
-def add_units(uid, data):
-    prev_data = read_from_firestore(uid)
-    # prev_data = sample_data
-    try:
-        prev_data["units"].append(data)
-        print(data)
-    except Exception as e:
-        print(e)
-        prev_data["units"] = [data,]
-
-    try:
-        print(prev_data["name"])
-    except:
-        print("data got reset")
-        return False
-    # print("after", prev_data, "/n")
-    return write_to_firestore(uid, prev_data)
+#     try:
+#         print(prev_data["name"])
+#     except:
+#         print("data got reset")
+#         return False
+#     # print("after", prev_data, "/n")
+#     return write_to_firestore(uid, prev_data)
 
 
-def add_category(uid, data):
-    prev_data = read_from_firestore(uid)
-    # prev_data = sample_data
-    try:
-        prev_data["category"].append({"name": data["Category"]})
-        # print(data)
-    except Exception as e:
-        print(e)
-        prev_data["category"] = list({"name": data["Category"]})
+# def add_units(uid, data):
+#     prev_data = read_from_firestore(uid)
+#     # prev_data = sample_data
+#     try:
+#         prev_data["units"].append(data)
+#         print(data)
+#     except Exception as e:
+#         print(e)
+#         prev_data["units"] = [data,]
 
-    try:
-        print(prev_data["name"])
-    except:
-        print("data got reset")
-        return False
-    # print("after", prev_data, "/n")
-    return write_to_firestore(uid, prev_data)
+#     try:
+#         print(prev_data["name"])
+#     except:
+#         print("data got reset")
+#         return False
+#     # print("after", prev_data, "/n")
+#     return write_to_firestore(uid, prev_data)
+
+
+# def add_category(uid, data):
+#     prev_data = read_from_firestore(uid)
+#     # prev_data = sample_data
+#     entry = {}
+#     entry["name"] = data["Category"]
+#     try:
+#         prev_data["category"].append(entry)
+#         # print(data)
+#     except Exception as e:
+#         print(e)
+#         prev_data["category"] = list(entry)
+
+#     try:
+#         print(prev_data["name"])
+#     except:
+#         print("data got reset")
+#         return False
+#     # print("after", prev_data, "/n")
+#     return write_to_firestore(uid, prev_data)
 
 
 def add_info(uid, data):
@@ -242,22 +245,22 @@ def add_info(uid, data):
     return write_to_firestore(uid, prev_data)
 
 
-def add_parties(uid, data):
-    prev_data = read_from_firestore(uid)
-    # prev_data = sample_data
-    try:
-        prev_data["parties"].append(data)
-        # print(data)
-    except Exception as e:
-        print(e)
-        prev_data["parties"] = [data,]
-    try:
-        print(prev_data["name"])
-    except:
-        print("data got reset")
-        return False
-    # print("after", prev_data, "/n")
-    return write_to_firestore(uid, prev_data)
+# def add_parties(uid, data):
+#     prev_data = read_from_firestore(uid)
+#     # prev_data = sample_data
+#     try:
+#         prev_data["parties"].append(data)
+#         # print(data)
+#     except Exception as e:
+#         print(e)
+#         prev_data["parties"] = [data,]
+#     try:
+#         print(prev_data["name"])
+#     except:
+#         print("data got reset")
+#         return False
+#     # print("after", prev_data, "/n")
+#     return write_to_firestore(uid, prev_data)
 
 
 # ROOT URLS
@@ -275,6 +278,36 @@ def reset_Acc():
 
     write_to_firestore(auth_header, {})
     return jsonify({"status": "success"}), 200
+
+
+@app.route('/editData', methods=['POST'])
+def editData():
+    auth_header = request.headers.get('Authorization')
+    print("Authorization Header:", auth_header)
+    if not check_user_exists(auth_header):
+        return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
+
+    data = request.get_json()
+    prev_data = read_from_firestore(auth_header)
+    # prev_data = sample_data
+    # try:
+    #     prev_data["parties"].append(data)
+    #     # print(data)
+    # except Exception as e:
+    #     print(e)
+    #     prev_data["parties"] = [data,]
+    try:
+        print(data["name"])
+    except:
+        print("data got reset")
+        return jsonify({"status": False, "desc": "data got reset"}), 400
+    print(data)
+    res = write_to_firestore(auth_header, data)
+    # res = add_Sale(auth_header, file_path)
+    if res:
+        return jsonify({"status": res}), 200
+    else:
+        return jsonify({"status": res}), 501
 
 
 @app.route('/addsales', methods=['POST'])
@@ -421,16 +454,16 @@ def todo():
         return jsonify({"status": res}), 501
 
 
-@app.route('/addsalesAndGetPdf', methods=['POST'])
+@app.route('/get-sales-invoice-pdf', methods=['POST'])
 def save_sales_nd_pdf():
     auth_header = request.headers.get('Authorization')
-    print("Authorization Header:", auth_header)
-    # if not check_user_exists(auth_header):
-    #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
+    # print("Authorization Header:", auth_header)
+    if not check_user_exists(auth_header):
+        return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
 
     data = request.get_json()
-    print(data)
-    add_Sale(data=data, uid=auth_header)
+    # print(data)
+    # add_Sale(data=data, uid=auth_header)
 
     from bill_pdf_maker import create_tax_invoice_pdf
     buffer = create_tax_invoice_pdf(data)

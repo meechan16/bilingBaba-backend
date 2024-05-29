@@ -5,3 +5,5 @@ flask_cors
 python-dotenv
 flask_mail
 gunicorn
+python-barcode 
+Pillow

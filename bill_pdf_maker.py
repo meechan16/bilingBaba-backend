@@ -46,9 +46,14 @@ def create_tax_invoice_pdf(data):
     c.drawString(50, 720, "Email: "+predata["email"])
 
     # Logo
-    logo_path = "backend/logo.jpg"  # Replace with the path to your logo image
     # Adjust coordinates and size as needed
-    c.drawImage(logo_path, x=450, y=720, width=100, height=50)
+    try:
+        logo_path = "backend/logo.jpg"  # Replace with the path to your logo image
+        c.drawImage(logo_path, x=450, y=720, width=100, height=50)
+    except e as Exception:
+        print(e)
+        logo_path = "./logo.jpg"  # Replace with the path to your logo image
+        c.drawImage(logo_path, x=450, y=720, width=100, height=50)
 
     # Draw line
     c.setStrokeColorRGB(0, 0, 0)  # Set line color to black

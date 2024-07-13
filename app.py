@@ -5,6 +5,7 @@ from firebase_admin.exceptions import FirebaseError
 from flask_cors import CORS
 # from flask_mail import Mail
 import os
+import io
 import uuid
 
 app = Flask(__name__)
@@ -84,13 +85,35 @@ def read_from_firestore(custom_id, collection="user_data"):
     return doc.to_dict()
 
 
-def upload_img(image, filename):
-    print("file_"+filename+".png")
-    blob = bucket.blob("file_"+filename+".png")
-    blob.upload_from_string(image, content_type='image/png')
+def upload_file(file_content, filename, file_type):
+    # Determine content type and file extension
+    if file_type == 'image':
+        content_type = 'image/png'
+        extension = '.png'
+    elif file_type == 'pdf':
+        content_type = 'application/pdf'
+        extension = '.pdf'
+    else:
+        raise ValueError(
+            "Unsupported file type. Only 'image' and 'pdf' are supported.")
+
+    # Generate full filename
+    full_filename = f"file_{filename}{extension}"
+    print(full_filename)
+
+    # Create a blob and upload the file
+    blob = bucket.blob(full_filename)
+
+    # If file_content is a BytesIO object, read it as bytes
+    if isinstance(file_content, io.BytesIO):
+        file_content = file_content.read()
+
+    blob.upload_from_string(file_content, content_type=content_type)
     blob.make_public()
-    image1_url = blob.public_url
-    return image1_url
+
+    # Return the public URL of the uploaded file
+    file_url = blob.public_url
+    return file_url
 
 
 def delete_img(url):
@@ -485,7 +508,8 @@ def save_sales_nd_pdf():
 
     from bill_pdf_maker import create_tax_invoice_pdf
     buffer = create_tax_invoice_pdf(data)
-    return send_file(buffer, mimetype='application/pdf')
+    link = upload_file(buffer, "invoicePdf", file_type="pdf")
+    return jsonify({"link": link})
 
 
 @app.route('/generate-barcode', methods=['POST'])
@@ -501,7 +525,7 @@ def barcodeGen():
 
     barcode = generate_barcode_blob(data['itemNumber'])
 
-    url = upload_img(barcode, filename=str(data['itemNumber']))
+    url = upload_file(barcode, filename=str(data['itemNumber']))
 
     return jsonify({"url": url, "status": "success"}), 200
 

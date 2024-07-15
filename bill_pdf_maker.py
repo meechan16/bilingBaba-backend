@@ -50,8 +50,7 @@ def create_tax_invoice_pdf(data):
     try:
         logo_path = "backend/logo.jpg"  # Replace with the path to your logo image
         c.drawImage(logo_path, x=450, y=720, width=100, height=50)
-    except e as Exception:
-        print(e)
+    except:
         logo_path = "./logo.jpg"  # Replace with the path to your logo image
         c.drawImage(logo_path, x=450, y=720, width=100, height=50)
 

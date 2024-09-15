@@ -1,3 +1,5 @@
+from io import BytesIO
+import pandas as pd
 from flask import Flask, jsonify, Response, request, send_file
 import firebase_admin
 from firebase_admin import credentials, auth, firestore, storage
@@ -540,6 +542,60 @@ def get_items():
     res = read_from_firestore(custom_id=auth_header)
     # print(res)
     return jsonify({"status": "success", "data": res}), 200
+
+
+# Endpoint to upload Excel and return JSON
+
+@app.route('/upload_excel', methods=['POST'])
+def upload_excel():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part in the request'}), 400
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    if file:
+        try:
+            df = pd.read_excel(file)
+            data = df.to_dict(orient='records')
+            return jsonify(data), 200
+
+        except Exception as e:
+            return jsonify({'error': f'Failed to process the file: {str(e)}'}), 500
+
+# Endpoint to accept JSON and return an Excel file
+
+
+@app.route('/json_to_excel', methods=['POST'])
+def json_to_excel():
+    try:
+        # Parse the JSON input from the request body
+        json_data = request.get_json()
+
+        if not isinstance(json_data, list) or len(json_data) == 0:
+            return jsonify({'error': 'Input must be a non-empty list of objects'}), 400
+
+        # Convert the JSON list to a pandas DataFrame
+        df = pd.DataFrame(json_data)
+
+        # Create a BytesIO object to store the Excel file in memory
+        output = BytesIO()
+
+        # Write the DataFrame to the BytesIO object as an Excel file
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False)
+
+        # Rewind the BytesIO object to the beginning
+        output.seek(0)
+
+        # Return the Excel file as a downloadable file
+        return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                         as_attachment=True, attachment_filename='output.xlsx')
+
+    except Exception as e:
+        return jsonify({'error': f'Failed to process the request: {str(e)}'}), 500
 
 
 if __name__ == '__main__':

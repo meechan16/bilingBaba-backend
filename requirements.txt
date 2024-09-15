@@ -7,3 +7,4 @@ flask_mail
 gunicorn
 python-barcode 
 Pillow
+pandas

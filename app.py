@@ -532,6 +532,28 @@ def barcodeGen():
     return jsonify({"url": url, "status": "success"}), 200
 
 
+@app.route('/upload_image', methods=['POST'])
+def upload_image():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part in the request'}), 400
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    if file:
+        # Read the file directly as a blob
+        image_blob = file.read()
+
+        # Pass the image blob to the dummy processing function
+        processed_url = upload_file(
+            image_blob, filename="dummy", file_type="image")
+
+        # Return the dummy URL in the response
+        return jsonify({'url': processed_url}), 200
+
+
 @app.route('/get_user', methods=['GET'])
 def get_items():
     auth_header = request.headers.get('Authorization')

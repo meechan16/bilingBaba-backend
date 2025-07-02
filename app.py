@@ -80,10 +80,6 @@ def read_from_firestore(custom_id, collection="user_data"):
     # Retrieve a document from the "items" collection
     doc_ref = db.collection(collection).document(custom_id)
     doc = doc_ref.get()
-    # if doc.exists:
-    #     print("Document data:", doc.to_dict())
-    # else:
-    #     print("No such document!")
     return doc.to_dict()
 
 
@@ -124,144 +120,6 @@ def delete_img(url):
     return True
 
 
-# def add_Sale(uid, data):
-#     prev_data = read_from_firestore(uid)
-
-#     # print("sales pre", prev_data)
-#     # count total length of previous array, add 1 and use it for index
-#     try:
-#         if len(prev_data["sales"] == 0):
-#             sales_index = 0
-#         else:
-#             sales_index = prev_data["sales"]["index"] + 1
-#     except:
-#         sales_index = 0
-#     # sales_index = len(prev_data['sales']) + 1
-#     data['index'] = sales_index
-
-#     # print("index: ", sales_index)
-
-#     # add sales list
-#     try:
-#         prev_data["sales"].append(data)
-#     except Exception as e:
-#         prev_data["sales"] = [data,]
-
-#     # add pending paid
-#     try:
-#         prev_data["sale_pending"] += int(data['pending'])
-#     except Exception as e:
-#         print(e)
-#         prev_data["sale_pending"] = int(data['pending'])
-#     try:
-#         prev_data["sale_paid"] += int(data['paid'])
-#     except Exception as e:
-#         print(e)
-#         prev_data["sale_paid"] = int(data['paid'])
-
-#     # add to collect
-#     if data['paymentStatus'] == 'pending':
-#         prev_data['to_collect'] += int(data['pending'])
-
-#     # add total sales
-#     try:
-#         prev_data["total_sales"] += int(data['total'])
-#     except Exception as e:
-#         print(e)
-#         prev_data["total_sales"] = int(data['total'])
-
-#     # print("sales", prev_data)
-#     # Test data
-#     try:
-#         print("data test", prev_data["name"])
-#     except:
-#         print("data got reset")
-#         return False
-#     return write_to_firestore(uid, prev_data)
-
-
-# def add_pruchase(uid, data):
-#     prev_data = read_from_firestore(uid)
-#     # prev_data = sample_data
-#     try:
-#         prev_data["purchase"].append(data)
-#         # print(data)
-#     except Exception as e:
-#         print(e)
-#         prev_data["purchase"] = [data,]
-#     try:
-#         prev_data["total_purchase"] += int(data['total'])
-#     except Exception as e:
-#         print(e)
-#         prev_data["total_purchase"] = int(data['total'])
-
-#     try:
-#         print(prev_data["name"])
-#     except:
-#         print("data got reset")
-#         return False
-#     # print("after", prev_data, "/n")
-#     return write_to_firestore(uid, prev_data)
-
-
-# def add_items(uid, data):
-#     prev_data = read_from_firestore(uid)
-#     # prev_data = sample_data
-#     try:
-#         prev_data["items"].append(data)
-#         print(data)
-#     except Exception as e:
-#         print(e)
-#         prev_data["items"] = [data,]
-
-#     try:
-#         print(prev_data["name"])
-#     except:
-#         print("data got reset")
-#         return False
-#     # print("after", prev_data, "/n")
-#     return write_to_firestore(uid, prev_data)
-
-
-# def add_units(uid, data):
-#     prev_data = read_from_firestore(uid)
-#     # prev_data = sample_data
-#     try:
-#         prev_data["units"].append(data)
-#         print(data)
-#     except Exception as e:
-#         print(e)
-#         prev_data["units"] = [data,]
-
-#     try:
-#         print(prev_data["name"])
-#     except:
-#         print("data got reset")
-#         return False
-#     # print("after", prev_data, "/n")
-#     return write_to_firestore(uid, prev_data)
-
-
-# def add_category(uid, data):
-#     prev_data = read_from_firestore(uid)
-#     # prev_data = sample_data
-#     entry = {}
-#     entry["name"] = data["Category"]
-#     try:
-#         prev_data["category"].append(entry)
-#         # print(data)
-#     except Exception as e:
-#         print(e)
-#         prev_data["category"] = list(entry)
-
-#     try:
-#         print(prev_data["name"])
-#     except:
-#         print("data got reset")
-#         return False
-#     # print("after", prev_data, "/n")
-#     return write_to_firestore(uid, prev_data)
-
 
 def add_info(uid, data):
     # prev_data = read_from_firestore(uid)
@@ -286,24 +144,6 @@ def add_info(uid, data):
         return False
     # print("after", prev_data, "/n")
     return write_to_firestore(uid, prev_data)
-
-
-# def add_parties(uid, data):
-#     prev_data = read_from_firestore(uid)
-#     # prev_data = sample_data
-#     try:
-#         prev_data["parties"].append(data)
-#         # print(data)
-#     except Exception as e:
-#         print(e)
-#         prev_data["parties"] = [data,]
-#     try:
-#         print(prev_data["name"])
-#     except:
-#         print("data got reset")
-#         return False
-#     # print("after", prev_data, "/n")
-#     return write_to_firestore(uid, prev_data)
 
 
 # ROOT URLS
@@ -332,13 +172,6 @@ def editData():
 
     data = request.get_json()
     prev_data = read_from_firestore(auth_header)
-    # prev_data = sample_data
-    # try:
-    #     prev_data["parties"].append(data)
-    #     # print(data)
-    # except Exception as e:
-    #     print(e)
-    #     prev_data["parties"] = [data,]
     try:
         a = data["name"]
     except:
@@ -352,9 +185,26 @@ def editData():
     else:
         return jsonify({"status": res}), 501
 
+def add_parties(uid, data):
+    prev_data = read_from_firestore(uid)
+    # prev_data = sample_data
+    try:
+        prev_data["parties"].append(data)
+        # print(data)
+    except Exception as e:
+        print(e)
+        prev_data["parties"] = [data,]
+    try:
+        print(prev_data["name"])
+    except:
+        print("data got reset")
+        return False
+    # print("after", prev_data, "/n")
+    return write_to_firestore(uid, prev_data)
 
-@app.route('/addsales', methods=['POST'])
-def add_sales():
+
+@app.route('/addparties', methods=['POST'])
+def add_pa():
     auth_header = request.headers.get('Authorization')
     # print("Authorization Header:", auth_header)
     # if not check_user_exists(auth_header):
@@ -362,7 +212,19 @@ def add_sales():
 
     file_path = request.get_json()
     # print(file_path)
-    res = add_Sale(auth_header, file_path)
+    res = add_parties(auth_header, file_path)
+    if res:
+        return jsonify({"status": res}), 200
+    else:
+        return jsonify({"status": res}), 501
+
+@app.route('/addsales', methods=['POST'])
+def add_sales():
+    auth_header = request.headers.get('Authorization')
+
+    file_path = request.get_json()
+    # print(file_path)
+    res = add_sales(auth_header, file_path)
     if res:
         return jsonify({"status": res}), 200
     else:
@@ -372,74 +234,20 @@ def add_sales():
 @app.route('/addpurchase', methods=['POST'])
 def add_purchase():
     auth_header = request.headers.get('Authorization')
-    # print("Authorization Header:", auth_header)
-    # if not check_user_exists(auth_header):
-    #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
-
     file_path = request.get_json()
     print(file_path)
-    res = add_pruchase(auth_header, file_path)
+    res = add_purchase(auth_header, file_path)
     if res:
         return jsonify({"status": res}), 200
     else:
         return jsonify({"status": res}), 501
 
 
-# @app.route('/additems', methods=['POST'])
-# def add_it():
-#     auth_header = request.headers.get('Authorization')
-#     # print("Authorization Header:", auth_header)
-#     # if not check_user_exists(auth_header):
-#     #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
-
-#     file_path = request.get_json()
-#     # print(file_path)
-#     res = add_items(auth_header, file_path)
-#     if res:
-#         return jsonify({"status": res}), 200
-#     else:
-#         return jsonify({"status": res}), 501
-
-
-# @app.route('/addCategory', methods=['POST'])
-# def add_cat():
-#     auth_header = request.headers.get('Authorization')
-#     # print("Authorization Header:", auth_header)
-#     # if not check_user_exists(auth_header):
-#     #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
-
-#     file_path = request.get_json()
-#     # print(file_path)
-#     res = add_category(auth_header, file_path)
-#     if res:
-#         return jsonify({"status": res}), 200
-#     else:
-#         return jsonify({"status": res}), 501
-
-
-# @app.route('/addUnits', methods=['POST'])
-# def add_un():
-#     auth_header = request.headers.get('Authorization')
-#     # print("Authorization Header:", auth_header)
-#     # if not check_user_exists(auth_header):
-#     #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
-
-#     file_path = request.get_json()
-#     # print(file_path)
-#     res = add_units(auth_header, file_path)
-#     if res:
-#         return jsonify({"status": res}), 200
-#     else:
-#         return jsonify({"status": res}), 501
 
 
 @app.route('/addinfo', methods=['POST'])
 def add_inf():
     auth_header = request.headers.get('Authorization')
-    # print("Authorization Header:", auth_header)
-    # if not check_user_exists(auth_header):
-    #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
-
     file_path = request.get_json()
     # print(file_path)
     res = add_info(auth_header, file_path)
@@ -449,41 +257,15 @@ def add_inf():
         return jsonify({"status": res}), 501
 
 
-# @app.route('/addparties', methods=['POST'])
-# def add_pa():
-#     auth_header = request.headers.get('Authorization')
-#     # print("Authorization Header:", auth_header)
-#     # if not check_user_exists(auth_header):
-#     #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
-
-#     file_path = request.get_json()
-#     # print(file_path)
-#     res = add_parties(auth_header, file_path)
-#     if res:
-#         return jsonify({"status": res}), 200
-#     else:
-#         return jsonify({"status": res}), 501
-
-
 @app.route('/update_todo', methods=['POST'])
 def todo():
     header = request.headers.get('Authorization')
-    # print("Authorization Header:", auth_header)
-    # if not check_user_exists(auth_header):
-    #     return jsonify({"status": "fail", "Description": "user doesnt exist"}), 200
     data = request.get_json()
 
     prev_data = read_from_firestore(header)
     # prev_data = sample_data
     # print('reqdata = ', data)
     prev_data["todo_list"] = data["todo_lists"]
-    # try:
-
-    #     # print(data)
-    # except Exception as e:
-    #     print(e)
-    #     # prev_data["todo_list"] = [data["todo_lists"]
-    # print('data = ', prev_data)
     try:
         print("Todo test PASS for - ", prev_data["name"])
     except:
@@ -619,6 +401,33 @@ def json_to_excel():
     except Exception as e:
         return jsonify({'error': f'Failed to process the request: {str(e)}'}), 500
 
+
+@app.route('/addparty', methods=['POST'])
+def add_party():
+    auth_header = request.headers.get('Authorization')
+    if not check_user_exists(auth_header):
+        return jsonify({"status": "fail", "Description": "user doesn't exist"}), 200
+
+    data = request.get_json()
+    if not data or "party" not in data:
+        return jsonify({"status": "fail", "Description": "No party data provided"}), 400
+
+    # Read current user data
+    user_data = read_from_firestore(auth_header)
+    if user_data is None:
+        return jsonify({"status": "fail", "Description": "User data not found"}), 404
+
+    # Add the new party to the parties list
+    if "parties" not in user_data or not isinstance(user_data["parties"], list):
+        user_data["parties"] = []
+    user_data["parties"].append(data["party"])
+
+    # Write back to Firestore
+    res = write_to_firestore(auth_header, user_data)
+    if res:
+        return jsonify({"status": "success", "party": data["party"]}), 200
+    else:
+        return jsonify({"status": "fail", "Description": "Failed to add party"}), 500
 
 if __name__ == '__main__':
     app.run(port=9000, debug=True)
